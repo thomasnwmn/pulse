@@ -1,0 +1,34 @@
+{
+  "name": "systemtelemetry",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --hostname 127.0.0.1",
+    "build": "NEXT_TELEMETRY_DISABLED=1 next build",
+    "start": "NEXT_TELEMETRY_DISABLED=1 next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "tsx --test tests/telemetry.test.ts tests/local-access.test.ts",
+    "test:native": "npm run daemon:build && tsx --test tests/native.test.ts",
+    "daemon:build": "cmake -S daemon -B daemon/build && cmake --build daemon/build --parallel",
+    "daemon": "./daemon/build/telemetryd",
+    "local": "node scripts/local.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.577.0",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/three": "^0.180.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
