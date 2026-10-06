@@ -37,3 +37,6 @@ next-env.d.ts
 
 # native daemon
 /daemon/build/
+/companion/build/
+/public/downloads/*-development-*.zip
+/public/downloads/*-development-*.tar.gz

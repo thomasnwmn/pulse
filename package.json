@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --hostname 127.0.0.1",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
-    "start": "NEXT_TELEMETRY_DISABLED=1 next start --hostname 127.0.0.1",
+    "start": "node scripts/serve.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "tsx --test tests/telemetry.test.ts tests/local-access.test.ts",
-    "test:native": "npm run daemon:build && tsx --test tests/native.test.ts",
+    "test": "node --import tsx --test tests/telemetry.test.ts tests/local-daemon.test.ts",
+    "test:native": "npm run daemon:build && node --import tsx --test tests/native.test.ts",
+    "companion:package": "node scripts/package-companion.mjs",
     "daemon:build": "cmake -S daemon -B daemon/build && cmake --build daemon/build --parallel",
     "daemon": "./daemon/build/telemetryd",
     "local": "node scripts/local.mjs"

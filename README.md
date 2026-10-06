@@ -1,51 +1,82 @@
-# Pulse - System Telemetry
+# Pulse — System Telemetry
 
-A local Next.js dashboard and C++ hardware collector. Switch between a lightweight 2D task manager and a procedural Three.js motherboard. Click the CPU, RAM, GPU, or NVMe drive to inspect it; load increases its emissive color from green through amber to red.
+A Next.js dashboard you visit at **https://pulse.thomasnewman.ca**, paired with a downloadable native companion. Vercel serves the interface; a C++ collector streams your computer’s readings directly into your browser. The website is ready to deploy; this repository does not publish it automatically.
 
-## Run locally
+The existing 2D task manager and Three.js motherboard remain. Click CPU, RAM, GPU, or storage to inspect live readings; higher load increases the component’s glow. Missing sensors remain unavailable rather than becoming demo readings.
 
-Requires Node.js 20.9+ (Node 24 recommended), npm, CMake 3.16+, and a C++17 compiler. On macOS, install Apple's Command Line Tools; Linux needs a compiler toolchain. Windows is not supported yet.
+## How it works
+
+```text
+Vercel / pulse.thomasnewman.ca ── HTML, JavaScript, app downloads ──→ Browser
+                                                                     ↑
+macOS APIs / Linux procfs → C++ telemetryd → 127.0.0.1:8765 ────────────┘
+                                            paired HTTP event stream
+```
+
+There is no cloud telemetry endpoint, Next.js relay, webhook, account, or database. Charts and history stay in browser memory. The companion opens a loopback listener only; no firewall changes, administrator access, Node.js runtime, or local website server are needed by end users. The Mac companion is a menu bar app that bundles the collector and stops it when you quit. The collector also exits if the companion closes unexpectedly.
+
+The interface loads only bundled assets, with no analytics or external fonts. Vercel receives ordinary website and download requests, not the hardware stream. The hosted JavaScript is trusted to handle your readings, so control of the domain and deployment still matters. This does not isolate readings from other software already running on your computer.
+
+## User flow
+
+1. Visit Pulse and choose **Connect computer**.
+2. Download Pulse Companion, unzip it, move it to Applications, and open it.
+3. Choose **Find companion**. Allow local-network access if your browser asks.
+4. Copy the pairing code from the app’s menu bar icon and enter it on the website.
+
+The browser connects only to `http://127.0.0.1:8765`, with credentials bound to the website origin. Browser support and local-network permission policies vary; use a current desktop Chrome or Edge for the initial release. HTTPS-to-loopback access must be tested on the actual deployed domain before public release. Browser permission denial, an absent app, or an unapproved origin produces setup guidance rather than fake data. Demo mode remains explicit.
+
+Pairing tokens are random, stored in tab-scoped sessionStorage, and expire after 12 hours. The code changes each time the collector starts; restarting invalidates all tokens. **Disconnect** revokes that tab’s token and clears its displayed readings. Requests must use an exact approved origin and loopback Host header. Pairing has bounded payloads and a five-failure-per-minute limit; snapshots and streams require a token. Health exposes only protocol version and readiness. This is a browser pairing boundary, not protection against malicious native software.
+
+## Deploy to Vercel
+
+1. Build the companion for the production domain using the commands below. Keep the generated production ZIP and `public/downloads/manifest.json` in the deployed repository so the download is available.
+2. Import `thomasnwmn/systemtelemetry` in Vercel using the Next.js framework. `vercel.json` supplies `npm run build`, the `out` output directory, and security headers. The build exports static assets; no telemetry functions run on Vercel.
+3. Add `pulse.thomasnewman.ca` to the project’s domains and configure the DNS record Vercel provides.
+4. Test download → app launch → permission → pairing → live readings from the HTTPS domain.
+
+The default companion URL is in `companion/config.json`. Vercel preview URLs are deliberately unapproved. To test a preview, package a companion with its exact HTTPS origin using `--url`; never use a wildcard origin. Changing the production domain requires a new companion build.
+
+### Build the downloadable app
+
+Requires Node.js 20.9+, npm, CMake 3.16+, and a C++17 compiler. macOS additionally needs Apple’s Command Line Tools and Swift. Windows is not supported yet.
 
 ```sh
 npm install
+npm run companion:package
+npm run build
+```
+
+Packaging defaults to `https://pulse.thomasnewman.ca` and produces a ZIP on Mac or a tarball on Linux, plus a download manifest with SHA-256 checksum. Each build targets the current machine’s architecture. The initial artifact is **macOS Apple Silicon, macOS 13+**; build on an Intel Mac for Intel support and on Linux for a Linux package. Linux collectors and packaging require verification on Linux.
+
+The initial Mac build is locally/ad-hoc signed, **not Developer ID signed or notarized**. Gatekeeper can block a browser-downloaded copy. Before public distribution, use an Apple Developer ID identity and a saved notarytool keychain profile:
+
+```sh
+PULSE_CODESIGN_IDENTITY='Developer ID Application: YOUR IDENTITY' \
+PULSE_NOTARY_PROFILE='your-saved-notary-profile' npm run companion:package
+npm run build
+```
+
+The packager signs the collector and app, submits the archive for notarization, staples the ticket, and only then marks the Mac download as a signed release. The app remains explicitly marked as a development build until this is done. Signing credentials remain on the packaging machine; Vercel needs none. Do not change browser security settings to make the connection work.
+
+## Develop locally
+
+```sh
 npm run daemon:build
 npm run local
 ```
 
-Open **http://127.0.0.1:3000**. Both servers bind to IPv4 loopback. `Ctrl+C` stops them.
+Open **http://127.0.0.1:3000**, choose Connect computer, find the companion, and enter the `PAIRING_CODE` printed in the terminal. `Ctrl+C` stops both processes. Running a local web server is only a development convenience.
 
-You can also start them in separate terminals:
+To test the Mac application against the development website:
 
 ```sh
-npm run daemon
-npm run dev
+npm run companion:package -- --development --url http://127.0.0.1:3000
 ```
 
-The dashboard starts in live mode. If the daemon is absent, it shows a connection guide; **Explore demo** explicitly enables simulated readings. Connection settings lets you switch back to your computer.
+Development archives are ignored by Git. Packaging a production release removes development entries from the download manifest.
 
-## Features
-
-- CPU, memory, GPU, disk, and network views with rolling 1, 5, and 15 minute charts. History stays in browser memory and begins when you open the dashboard.
-- Per-core CPU readings, process search and sorting, pause/resume, and JSON snapshot export.
-- Lazy-loaded 3D model with orbit/zoom controls, hover hints, clickable components, load-based glow, and a reset view button. The model is a schematic, not a hardware scan.
-- 3D runs at up to 30 fps, caps pixel density at 1.5, and stops drawing when off screen or the tab is hidden. Switching to 2D disposes the renderer and its resources.
-- Unavailable sensors display a dash and use neutral coloring. They are never replaced by demo data automatically.
-
-## Data flow and privacy
-
-```text
-macOS APIs / Linux procfs + sysfs
-              ↓ 1 second sampling
-C++ telemetryd · 127.0.0.1:8765
-              ↓ HTTP Server-Sent Events
-Next.js /api/telemetry · 127.0.0.1:3000
-              ↓ same-origin EventSource
-2D dashboard / Three.js motherboard
-```
-
-This is a continuous local event stream, rather than a cloud webhook. Native endpoints are `GET /health`, `GET /snapshot`, and `GET /events`. The proxy target is fixed to loopback. Native Host/origin checks and dashboard same-origin checks block requests from arbitrary websites and DNS rebinding hosts; no permissive CORS is enabled. This does not isolate data from other software already running on your computer.
-
-No accounts, remote model assets, analytics, external fonts, or external runtime services. Dependencies are downloaded during installation. Next.js diagnostic telemetry is disabled in the provided npm scripts. No daemon installation, root access, or persistent background service is required. Process names, PIDs, memory, and CPU usage are collected; command lines and environment variables are not.
+Do not run a standalone daemon and the app together: both use port 8765. Native endpoints are `GET /health`, `POST /pair`, authenticated `GET /snapshot`, authenticated `GET /events`, and authenticated `DELETE /session`. For manual production-origin testing, start `telemetryd --allow-origin https://pulse.thomasnewman.ca`.
 
 ## Collector support
 
@@ -71,9 +102,9 @@ GPU support varies by driver. Apple Silicon's GPU counters and temperatures are 
 npm run typecheck
 npm run lint
 npm test
-npm run test:native  # stop any running daemon first; uses port 8765
+npm run test:native  # stop any running companion/daemon first; uses port 8765
 npm run build
-npm run start        # production dashboard on loopback
+npm run start        # preview the exported static site on 127.0.0.1:3000
 ```
 
-`./daemon/build/telemetryd --once` prints a real JSON sample without opening a port. Native integration tests check the schema, request restrictions, successive SSE samples, and client disconnects. macOS is the initial development platform; Linux collectors require verification on a Linux machine.
+`./daemon/build/telemetryd --once` prints a real sample without opening a port. Tests cover schema validation, fragmented streams, session validation, native pairing, approved CORS preflights, rebinding protection, token origin binding, revocation, attempt limits, successive samples, client disconnects, and collector shutdown when its companion exits. macOS is the initial development platform; an actual hosted HTTPS browser connection and signed distribution remain release checks.

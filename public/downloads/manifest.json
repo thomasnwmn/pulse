@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "releases": [
+    {
+      "label": "Mac · Apple Silicon",
+      "url": "/downloads/pulse-companion-macos-arm64-0.1.0.zip",
+      "origin": "https://pulse.thomasnewman.ca",
+      "version": "0.1.0",
+      "platform": "macos",
+      "arch": "arm64",
+      "signed": false,
+      "development": false,
+      "sha256": "83b3fe3ec2184ce48774ed8cea6826a064f104c4155b41fe3523a3a89dd2f195",
+      "size": 95240
+    }
+  ]
+}

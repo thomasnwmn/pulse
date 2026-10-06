@@ -225,3 +225,20 @@ dd { margin: 0; text-align: right; color: #76875f; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 @media (max-width: 730px) { .mobile-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; margin: -3px 0 13px; scrollbar-width: thin; } .mobile-nav button { display: flex; align-items: center; gap: 6px; padding: 7px 9px; font-size: 9px; color: #8a967c; white-space: nowrap; border-radius: 4px; } .mobile-nav button.selected { color: #607545; background: #eaf1de; } .view-control { white-space: nowrap; font-size: 10px; } }
 @media (max-width: 480px) { .brand { margin-right: 0; } .topbar-actions { gap: 8px; flex-shrink: 0; } .view-control { gap: 6px; } }
+.companion-modal { max-height: calc(100dvh - 40px); overflow-y: auto; width: min(540px, calc(100vw - 32px)); }
+.setup-step > div { min-width: 0; flex: 1; }
+.setup-description { display: block; color: #858c7b; font-size: 11px; line-height: 1.6; margin: 7px 0 10px; }
+.companion-downloads { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.pairing-form { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.pairing-form input { min-width: 0; flex: 1; border: 1px solid var(--line); background: #fafbf7; border-radius: 5px; padding: 10px 12px; letter-spacing: 1px; font-family: monospace; }
+.pairing-form .button { flex-shrink: 0; white-space: nowrap; }
+.companion-modal .pairing-form .primary-button { width: auto; margin-top: 0; }
+.connection-error { color: #9c522e; background: #fff6ed; border: 1px solid #efdfcd; border-radius: 5px; padding: 12px; font-size: 11px !important; line-height: 1.6 !important; }
+.companion-connected { display: flex; gap: 14px; align-items: center; padding: 20px 16px; background: #eff6e5; border: 1px solid #dce9ca; border-radius: 7px; color: #638536; margin: 22px 0; }
+.companion-connected strong, .companion-connected span { display: block; }
+.companion-connected span { color: #839373; margin-top: 6px; font-size: 11px; }
+.companion-footer { display: flex; align-items: center; gap: 16px; margin-top: 20px; }
+.companion-footer > .primary-button { margin: 0 0 0 auto; width: auto; }
+.text-button { font-size: 11px; color: #6e853e; padding: 7px 0; text-decoration: underline; text-underline-offset: 3px; }
+.offline-banner .text-button { white-space: nowrap; }
+@media (max-width: 480px) { .pairing-form { flex-wrap: wrap; } .companion-modal .pairing-form .primary-button { width: 100%; justify-content: center; } .companion-modal { padding: 24px; } }
