@@ -1,4 +1,4 @@
-# Pulse · System Telemetry
+# Pulse - System Telemetry
 
 A local Next.js dashboard and C++ hardware collector. Switch between a lightweight 2D task manager and a procedural Three.js motherboard. Click the CPU, RAM, GPU, or NVMe drive to inspect it; load increases its emissive color from green through amber to red.
 
