@@ -31,7 +31,7 @@ Pairing tokens are random, stored in tab-scoped sessionStorage, and expire after
 ## Deploy to Vercel
 
 1. Build the companion for the production domain using the commands below. Keep the generated production ZIP and `public/downloads/manifest.json` in the deployed repository so the download is available.
-2. Import `thomasnwmn/systemtelemetry` in Vercel using the Next.js framework. `vercel.json` supplies `npm run build`, the `out` output directory, and security headers. The build exports static assets; no telemetry functions run on Vercel.
+2. Import this repository in Vercel using the **Next.js** framework preset. `vercel.json` supplies `npm run build` and security headers. Leave the project’s **Output Directory override disabled**: Vercel’s Next.js adapter needs the default `.next` build directory to read its manifests and handles the static export itself. `next.config.ts` still uses `output: "export"`, so `npm run build` generates the static site in `out`; no telemetry functions run on Vercel.
 3. Add `pulse.thomasnewman.ca` to the project’s domains and configure the DNS record Vercel provides.
 4. Test download → app launch → permission → pairing → live readings from the HTTPS domain.
 
